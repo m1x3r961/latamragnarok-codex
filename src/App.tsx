@@ -77,7 +77,7 @@ function App() {
     setIsAiLoading(true);
 
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
       
       // Basic context for the AI
       const systemPrompt = "Eres el Asistente Experto de 'LatamRagnarok', un gremio del juego Gloria Victis. Responde de forma amigable, directa y muy conocedora sobre crafteo de Gloria Victis. El usuario pregunta: " + userMessage;
