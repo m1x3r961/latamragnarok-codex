@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Sparkles, BookOpen, Calculator, Globe, Shield, Send } from 'lucide-react';
+import { BookOpen, Calculator, Globe, Send, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from './supabaseClient';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -55,8 +55,12 @@ const translations = {
   }
 };
 
+const getProfessionName = (profId: number, lang: 'es' | 'en') => {
+  const profs = translations[lang].professions as Record<string, string>;
+  return profs[profId.toString()] || profs['default'];
+};
+
 function App() {
-  const [activeTab, setActiveTab] = useState('codex');
   const [search, setSearch] = useState('');
   const [recipes, setRecipes] = useState<any[]>([]);
   const [lang, setLang] = useState<'es' | 'en'>('es');
@@ -137,11 +141,9 @@ function App() {
 
   useEffect(() => {
     const fetchRecipes = async () => {
-      setLoading(true);
       const { data, error } = await supabase.from('recipes').select('*').limit(50);
       if (error) console.error(error);
       if (data) setRecipes(data);
-      setLoading(false);
     };
     fetchRecipes();
   }, []);
