@@ -103,18 +103,30 @@ function App() {
 
   useEffect(() => {
     if (selectedRecipe) {
-      // Extract all item IDs from materials and products
+      // Helper to parse if string
+      const parseJSON = (data: any) => {
+        if (typeof data === 'string') {
+          try { return JSON.parse(data); } catch { return []; }
+        }
+        return data || [];
+      };
+
+      const products = parseJSON(selectedRecipe.products);
+      const materials = parseJSON(selectedRecipe.materials);
+
       const itemIds = new Set<number>();
       
       // Products: p is array of [itemId, type, qty, ... ]
-      if (selectedRecipe.products) {
-        selectedRecipe.products.forEach((p: any) => itemIds.add(p[0]));
+      if (products) {
+        products.forEach((p: any) => itemIds.add(p[0]));
       }
       
       // Materials: m is array of {g: group, t: array of [itemId, type, qty, ... ]}
-      if (selectedRecipe.materials) {
-        selectedRecipe.materials.forEach((mGroup: any) => {
-          mGroup.t.forEach((t: any) => itemIds.add(t[0]));
+      if (materials) {
+        materials.forEach((mGroup: any) => {
+          if (mGroup.t) {
+            mGroup.t.forEach((t: any) => itemIds.add(t[0]));
+          }
         });
       }
 
@@ -227,15 +239,15 @@ function App() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
                     <div>
                       <h3>{lang === 'es' ? 'Productos' : 'Products'}</h3>
-                      {selectedRecipe.products?.map((p: any, idx: number) => (
+                      {(typeof selectedRecipe.products === 'string' ? JSON.parse(selectedRecipe.products || '[]') : (selectedRecipe.products || [])).map((p: any, idx: number) => (
                         <div key={idx}>{recipeItems[p[0]]?.name || `Item #${p[0]}`} (x{p[2]})</div>
                       ))}
                     </div>
                     <div>
                       <h3>{lang === 'es' ? 'Materiales' : 'Materials'}</h3>
-                      {selectedRecipe.materials?.map((mGroup: any, gIdx: number) => (
+                      {(typeof selectedRecipe.materials === 'string' ? JSON.parse(selectedRecipe.materials || '[]') : (selectedRecipe.materials || [])).map((mGroup: any, gIdx: number) => (
                         <div key={gIdx} style={{ marginBottom: '10px' }}>
-                          {mGroup.t.map((mat: any, mIdx: number) => (
+                          {mGroup.t && mGroup.t.map((mat: any, mIdx: number) => (
                             <div key={mIdx}>{recipeItems[mat[0]]?.name || `Item #${mat[0]}`} (x{mat[2]})</div>
                           ))}
                         </div>
