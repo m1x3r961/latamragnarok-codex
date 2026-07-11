@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Calculator, Globe, Send, Sparkles } from 'lucide-react';
+import { BookOpen, Calculator, Globe, Send, Sparkles, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from './supabaseClient';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -68,6 +68,14 @@ function App() {
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
   const [recipeItems, setRecipeItems] = useState<Record<number, any>>({});
   const [activeTab, setActiveTab] = useState<'recipes' | 'calculator'>('recipes');
+  
+  const getRecipeIconId = (products: any) => {
+    try {
+      const p = typeof products === 'string' ? JSON.parse(products) : products;
+      if (p && p.length > 0) return p[0][0];
+    } catch {}
+    return null;
+  };
   const [aiMessages, setAiMessages] = useState([{ role: 'model', text: '¡Hola! Soy la IA de LatamRagnarok. Puedo ayudarte con dudas sobre crafteo o guiarte en el juego. ¿Qué necesitas?' }]);
   const [aiInput, setAiInput] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -215,46 +223,116 @@ function App() {
       <main style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         {activeTab === 'recipes' && (
           <>
-            <aside style={{ width: '400px', borderRight: '1px solid var(--border)', overflowY: 'auto' }}>
-              <div style={{ padding: '20px' }}>
-                <input type="text" placeholder={t.searchPlaceholder} value={search} onChange={(e) => setSearch(e.target.value)} style={{ width: '100%' }} />
+            <aside className="sidebar glass" style={{ width: '400px', borderRight: '1px solid var(--border)', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+              <div className="search-box" style={{ padding: '20px', borderBottom: '1px solid var(--border)', position: 'relative' }}>
+                <input 
+                  type="text" 
+                  placeholder={t.searchPlaceholder} 
+                  value={search} 
+                  onChange={(e) => setSearch(e.target.value)} 
+                  style={{ width: '100%', padding: '12px 15px', borderRadius: '8px', background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border)', color: 'white' }} 
+                />
               </div>
-              {filteredRecipes.map(r => (
-                <div key={r.id} onClick={() => setSelectedRecipe(r)} style={{ padding: '15px', cursor: 'pointer', borderBottom: '1px solid var(--border)' }}>
-                  <div style={{ fontWeight: 600 }}>{r.name}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--secondary)' }}>{getProfessionName(r.profession, lang)}</div>
-                </div>
-              ))}
+              <div className="recipe-list" style={{ flex: 1, padding: '15px', overflowY: 'auto' }}>
+                {filteredRecipes.map(r => {
+                  const iconId = getRecipeIconId(r.products);
+                  return (
+                    <motion.div 
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      key={r.id} 
+                      onClick={() => setSelectedRecipe(r)} 
+                      className={`glass-card ${selectedRecipe?.id === r.id ? 'active' : ''}`}
+                      style={{ 
+                        padding: '12px', 
+                        marginBottom: '10px', 
+                        cursor: 'pointer', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '15px',
+                        background: selectedRecipe?.id === r.id ? 'rgba(220, 38, 38, 0.15)' : 'rgba(0,0,0,0.4)',
+                        border: selectedRecipe?.id === r.id ? '1px solid var(--accent)' : '1px solid var(--border)',
+                        borderRadius: '8px'
+                      }}
+                    >
+                      <div style={{ width: '44px', height: '44px', borderRadius: '8px', background: 'rgba(0,0,0,0.6)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        {iconId ? (
+                          <img src={`/icons/icon_${iconId}.png`} alt="icon" style={{ width: '32px', height: '32px' }} onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<span style="color:var(--accent)">⚒️</span>'; }} />
+                        ) : (
+                          <span style={{ color: 'var(--accent)' }}>⚒️</span>
+                        )}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '15px' }}>{r.name}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--secondary)' }}>{getProfessionName(r.profession, lang)} • Lv{r.min_level}-{r.max_level}</div>
+                      </div>
+                      <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '18px' }}>+</button>
+                    </motion.div>
+                  );
+                })}
+              </div>
             </aside>
 
-            <section style={{ flex: 1, overflowY: 'auto', padding: '40px', position: 'relative' }}>
+            <section className="content-area glass" style={{ flex: 1, overflowY: 'auto', padding: '40px', position: 'relative' }}>
               {!selectedRecipe ? (
-                <div style={{ textAlign: 'center', opacity: 0.5 }}>
-                  <Sparkles size={64} />
+                <div style={{ textAlign: 'center', opacity: 0.5, marginTop: '10vh' }}>
+                  <Shield size={400} style={{ position: 'absolute', opacity: 0.03, color: 'var(--accent)', zIndex: 0, left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }} />
+                  <Sparkles size={64} style={{ color: 'var(--accent)', marginBottom: '20px' }} />
                   <h2>{t.dynamicTitle}</h2>
+                  <p>{t.dynamicDesc1}</p>
                 </div>
               ) : (
-                <div>
-                  <h2>{selectedRecipe.name}</h2>
+                <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ position: 'relative', zIndex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px', borderBottom: '1px solid var(--border)', paddingBottom: '20px' }}>
+                    <div style={{ width: '80px', height: '80px', background: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {getRecipeIconId(selectedRecipe.products) ? (
+                        <img src={`/icons/icon_${getRecipeIconId(selectedRecipe.products)}.png`} style={{ width: '56px', height: '56px' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                      ) : (
+                         <Shield size={40} color="var(--accent)" opacity={0.5} />
+                      )}
+                    </div>
+                    <div>
+                      <h2 style={{ fontSize: '28px', color: 'var(--text-main)', margin: '0 0 5px 0' }}>{selectedRecipe.name}</h2>
+                      <div style={{ color: 'var(--accent)', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        {getProfessionName(selectedRecipe.profession, lang)} • Lv {selectedRecipe.min_level} - {selectedRecipe.max_level}
+                      </div>
+                    </div>
+                  </div>
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
                     <div>
-                      <h3>{lang === 'es' ? 'Productos' : 'Products'}</h3>
+                      <h3 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '15px' }}>{lang === 'es' ? 'Productos' : 'Products'}</h3>
                       {(typeof selectedRecipe.products === 'string' ? JSON.parse(selectedRecipe.products || '[]') : (selectedRecipe.products || [])).map((p: any, idx: number) => (
-                        <div key={idx}>{recipeItems[p[0]]?.name || `Item #${p[0]}`} (x{p[2]})</div>
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '15px', background: 'var(--bg-card)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border)', marginBottom: '10px' }}>
+                          <img src={`/icons/icon_${p[0]}.png`} style={{ width: '32px', height: '32px' }} onError={(e) => e.currentTarget.style.display='none'} />
+                          <div style={{ flex: 1 }}>{recipeItems[p[0]]?.name || `Item #${p[0]}`}</div>
+                          <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#10b981' }}>x{p[2]}</div>
+                        </div>
                       ))}
                     </div>
                     <div>
-                      <h3>{lang === 'es' ? 'Materiales' : 'Materials'}</h3>
+                      <h3 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '15px' }}>{lang === 'es' ? 'Materiales' : 'Materials'}</h3>
                       {(typeof selectedRecipe.materials === 'string' ? JSON.parse(selectedRecipe.materials || '[]') : (selectedRecipe.materials || [])).map((mGroup: any, gIdx: number) => (
-                        <div key={gIdx} style={{ marginBottom: '10px' }}>
-                          {mGroup.t && mGroup.t.map((mat: any, mIdx: number) => (
-                            <div key={mIdx}>{recipeItems[mat[0]]?.name || `Item #${mat[0]}`} (x{mat[2]})</div>
-                          ))}
+                        <div key={gIdx} style={{ marginBottom: '15px', background: 'var(--bg-card)', borderRadius: '8px', border: '1px solid var(--border)', overflow: 'hidden' }}>
+                          {mGroup.g === 1 && (
+                            <div style={{ background: 'var(--bg-hover)', padding: '6px 15px', fontSize: '12px', color: 'var(--secondary)', textTransform: 'uppercase', borderBottom: '1px solid var(--border)' }}>
+                              {lang === 'es' ? 'Elige Uno' : 'Choose One'}
+                            </div>
+                          )}
+                          <div style={{ padding: '10px' }}>
+                            {mGroup.t && mGroup.t.map((mat: any, mIdx: number) => (
+                              <div key={mIdx} style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '8px 5px' }}>
+                                <img src={`/icons/icon_${mat[0]}.png`} style={{ width: '28px', height: '28px' }} onError={(e) => e.currentTarget.style.display='none'} />
+                                <div style={{ flex: 1, color: 'var(--text-muted)' }}>{recipeItems[mat[0]]?.name || `Item #${mat[0]}`}</div>
+                                <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-main)' }}>x{mat[2]}</div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       ))}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               )}
             </section>
           </>
