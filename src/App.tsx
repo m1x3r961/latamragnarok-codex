@@ -59,9 +59,11 @@ function App() {
   const [activeTab, setActiveTab] = useState('codex');
   const [search, setSearch] = useState('');
   const [recipes, setRecipes] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [lang, setLang] = useState<'es' | 'en'>('es');
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
+  const [recipeItems, setRecipeItems] = useState<Record<number, any>>({});
+  const [activeTab, setActiveTab] = useState<'recipes' | 'calculator'>('recipes');
   const [aiMessages, setAiMessages] = useState([{ role: 'model', text: '¡Hola! Soy la IA de LatamRagnarok. Puedo ayudarte con dudas sobre crafteo o guiarte en el juego. ¿Qué necesitas?' }]);
   const [aiInput, setAiInput] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -94,6 +96,40 @@ function App() {
     
     setIsAiLoading(false);
   };
+
+  useEffect(() => {
+    if (selectedRecipe) {
+      // Extract all item IDs from materials and products
+      const itemIds = new Set<number>();
+      
+      // Products: p is array of [itemId, type, qty, ... ]
+      if (selectedRecipe.products) {
+        selectedRecipe.products.forEach((p: any) => itemIds.add(p[0]));
+      }
+      
+      // Materials: m is array of {g: group, t: array of [itemId, type, qty, ... ]}
+      if (selectedRecipe.materials) {
+        selectedRecipe.materials.forEach((mGroup: any) => {
+          mGroup.t.forEach((t: any) => itemIds.add(t[0]));
+        });
+      }
+
+      const fetchItems = async () => {
+        const { data, error } = await supabase
+          .from('items')
+          .select('*')
+          .in('id', Array.from(itemIds));
+          
+        if (data && !error) {
+          const itemsMap: Record<number, any> = {};
+          data.forEach(item => itemsMap[item.id] = item);
+          setRecipeItems(itemsMap);
+        }
+      };
+
+      fetchItems();
+    }
+  }, [selectedRecipe]);
 
   const toggleLanguage = () => {
     setLang(lang === 'es' ? 'en' : 'es');
@@ -144,114 +180,78 @@ function App() {
         </div>
         
         <div style={{ flex: 1, display: 'flex', gap: '10px', marginLeft: '40px' }}>
-          <button 
-            className={activeTab === 'codex' ? 'primary' : ''} 
-            onClick={() => setActiveTab('codex')}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-          >
+          <button className={activeTab === 'recipes' ? 'primary' : ''} onClick={() => setActiveTab('recipes')} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <BookOpen size={16} /> {t.recipes}
           </button>
-          <button 
-            className={activeTab === 'calc' ? 'primary' : ''} 
-            onClick={() => setActiveTab('calc')}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-          >
+          <button className={activeTab === 'calculator' ? 'primary' : ''} onClick={() => setActiveTab('calculator')} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Calculator size={16} /> {t.calculator}
           </button>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          {/* Language Switcher */}
-          <button 
-            onClick={toggleLanguage} 
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: '1px solid var(--border)' }}
-            title="Switch Language"
-          >
+          <button onClick={toggleLanguage} style={{ background: 'transparent', border: '1px solid var(--border)' }}>
             <Globe size={16} /> {t.language}
           </button>
-
-          <button 
-            className={`primary ${aiPanelOpen ? 'ai-button-active' : ''}`} 
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-            onClick={() => setAiPanelOpen(!aiPanelOpen)}
-          >
+          <button className={`primary ${aiPanelOpen ? 'ai-button-active' : ''}`} onClick={() => setAiPanelOpen(!aiPanelOpen)}>
             <Sparkles size={16} /> {t.askAi}
           </button>
         </div>
       </header>
 
-      {/* Main Content */}
       <main style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        
-        {/* Sidebar */}
-        <aside style={{ width: '400px', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', background: 'var(--bg-panel)' }}>
-          <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-            <div style={{ position: 'relative' }}>
-              <Search size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-muted)' }} />
-              <input 
-                type="text" 
-                placeholder={t.searchPlaceholder} 
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                style={{ width: '100%', paddingLeft: '40px' }}
-              />
-            </div>
-          </div>
-          
-          <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-            {loading ? (
-              <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}>{t.loading}</div>
-            ) : (
-              <AnimatePresence>
-                {filteredRecipes.map((r, i) => (
-                  <motion.div 
-                    key={r.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: (i % 15) * 0.03 }}
-                    className="glass-card" 
-                    style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', padding: '12px' }}
-                  >
-                    <div style={{ width: '44px', height: '44px', borderRadius: '8px', background: 'rgba(0,0,0,0.4)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--accent)' }}>
-                      ⚒️
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name}</div>
-                      <div style={{ fontSize: '12px', color: 'var(--secondary)' }}>
-                        {(t.professions as any)[r.profession] || t.professions.default} • Lv{r.min_level}-{r.max_level}
-                      </div>
-                    </div>
-                    <button style={{ padding: '6px', borderRadius: '50%', background: 'transparent', color: 'var(--text-muted)', border: 'none' }} onClick={(e) => { e.stopPropagation(); }}>+</button>
-                  </motion.div>
-                ))}
-                {filteredRecipes.length === 0 && !loading && (
-                   <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}>{t.noRecipes}</div>
-                )}
-              </AnimatePresence>
-            )}
-          </div>
-        </aside>
+        {activeTab === 'recipes' && (
+          <>
+            <aside style={{ width: '400px', borderRight: '1px solid var(--border)', overflowY: 'auto' }}>
+              <div style={{ padding: '20px' }}>
+                <input type="text" placeholder={t.searchPlaceholder} value={search} onChange={(e) => setSearch(e.target.value)} style={{ width: '100%' }} />
+              </div>
+              {filteredRecipes.map(r => (
+                <div key={r.id} onClick={() => setSelectedRecipe(r)} style={{ padding: '15px', cursor: 'pointer', borderBottom: '1px solid var(--border)' }}>
+                  <div style={{ fontWeight: 600 }}>{r.name}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--secondary)' }}>{getProfessionName(r.profession, lang)}</div>
+                </div>
+              ))}
+            </aside>
 
-        {/* Content Area */}
-        <section style={{ flex: 1, padding: '40px', overflowY: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-           {/* Background watermark */}
-           <Shield size={400} style={{ position: 'absolute', opacity: 0.02, color: 'var(--accent)', zIndex: 0 }} />
-           
-           <div style={{ textAlign: 'center', color: 'var(--text-muted)', zIndex: 1 }}>
-              <motion.div 
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Sparkles size={64} style={{ margin: '0 auto 20px', opacity: 0.8, color: 'var(--accent)', filter: 'drop-shadow(0 0 10px rgba(220,38,38,0.5))' }} />
-                <h2 style={{ color: 'var(--text-main)', fontSize: '32px', marginBottom: '10px' }}>{t.dynamicTitle}</h2>
-                <p style={{ fontSize: '18px' }}>{t.dynamicDesc1}</p>
-                <p style={{ color: 'var(--secondary)' }}>{t.dynamicDesc2}</p>
-              </motion.div>
-           </div>
-        </section>
+            <section style={{ flex: 1, overflowY: 'auto', padding: '40px', position: 'relative' }}>
+              {!selectedRecipe ? (
+                <div style={{ textAlign: 'center', opacity: 0.5 }}>
+                  <Sparkles size={64} />
+                  <h2>{t.dynamicTitle}</h2>
+                </div>
+              ) : (
+                <div>
+                  <h2>{selectedRecipe.name}</h2>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+                    <div>
+                      <h3>{lang === 'es' ? 'Productos' : 'Products'}</h3>
+                      {selectedRecipe.products?.map((p: any, idx: number) => (
+                        <div key={idx}>{recipeItems[p[0]]?.name || `Item #${p[0]}`} (x{p[2]})</div>
+                      ))}
+                    </div>
+                    <div>
+                      <h3>{lang === 'es' ? 'Materiales' : 'Materials'}</h3>
+                      {selectedRecipe.materials?.map((mGroup: any, gIdx: number) => (
+                        <div key={gIdx} style={{ marginBottom: '10px' }}>
+                          {mGroup.t.map((mat: any, mIdx: number) => (
+                            <div key={mIdx}>{recipeItems[mat[0]]?.name || `Item #${mat[0]}`} (x{mat[2]})</div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </section>
+          </>
+        )}
 
-        {/* AI Slide-out Panel */}
+        {activeTab === 'calculator' && (
+          <section style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+             <h2>{lang === 'es' ? 'Calculadora en Desarrollo' : 'Calculator in Development'}</h2>
+          </section>
+        )}
+
         <AnimatePresence>
           {aiPanelOpen && (
             <motion.div 
