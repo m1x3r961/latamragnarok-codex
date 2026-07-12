@@ -118,21 +118,37 @@ function App() {
   };
 
   useEffect(() => {
+    const fetchAll = async (table: string) => {
+      let allData: any[] = [];
+      let page = 0;
+      while (true) {
+        const { data, error } = await supabase.from(table).select('*').range(page * 1000, (page + 1) * 1000 - 1);
+        if (error) {
+          console.error(`Error fetching ${table}:`, error);
+          break;
+        }
+        if (data) {
+          allData = [...allData, ...data];
+          if (data.length < 1000) break;
+          page++;
+        } else {
+          break;
+        }
+      }
+      return allData;
+    };
+
     const fetchData = async () => {
-      const [recipesRes, itemsRes] = await Promise.all([
-        supabase.from('recipes').select('*'),
-        supabase.from('items').select('*')
+      const [allRecipes, allItems] = await Promise.all([
+        fetchAll('recipes'),
+        fetchAll('items')
       ]);
       
-      if (recipesRes.error) console.error(recipesRes.error);
-      if (recipesRes.data) setRecipes(recipesRes.data);
+      setRecipes(allRecipes);
       
-      if (itemsRes.error) console.error(itemsRes.error);
-      if (itemsRes.data) {
-        const itemsMap: Record<number, any> = {};
-        itemsRes.data.forEach(item => itemsMap[item.id] = item);
-        setRecipeItems(itemsMap);
-      }
+      const itemsMap: Record<number, any> = {};
+      allItems.forEach(item => itemsMap[item.id] = item);
+      setRecipeItems(itemsMap);
     };
     
     fetchData();
