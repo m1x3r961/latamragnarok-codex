@@ -348,11 +348,11 @@ function App() {
 
             <section className="content-area glass" style={{ flex: 1, overflowY: 'auto', padding: '40px', position: 'relative' }}>
               {!selectedRecipe ? (
-                <div style={{ textAlign: 'center', opacity: 0.5, marginTop: '10vh' }}>
-                  <Shield size={400} style={{ position: 'absolute', opacity: 0.03, color: 'var(--accent)', zIndex: 0, left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }} />
-                  <Sparkles size={64} style={{ color: 'var(--accent)', marginBottom: '20px' }} />
-                  <h2>{t.dynamicTitle}</h2>
-                  <p>{t.dynamicDesc1}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '60vh', position: 'relative' }}>
+                  <img src="/shield.png" alt="Shield Background" style={{ position: 'absolute', width: '500px', height: '500px', opacity: 0.15, filter: 'blur(6px)', zIndex: 0, pointerEvents: 'none' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                  <h2 style={{ position: 'relative', zIndex: 1, fontSize: '42px', color: 'var(--text-main)', textShadow: '0 4px 12px rgba(0,0,0,0.8)', letterSpacing: '3px', fontWeight: 'bold' }}>
+                    Códice de LatamRagnarok
+                  </h2>
                 </div>
               ) : (
                 <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ position: 'relative', zIndex: 1 }}>
