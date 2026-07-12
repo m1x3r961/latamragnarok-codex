@@ -168,9 +168,23 @@ function App() {
     fetchRecipes();
   }, []);
 
-  const filteredRecipes = recipes.filter(r => 
-    r.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredRecipes = recipes.filter(r => {
+    const rName = lang === 'es' && r.name_es ? r.name_es : r.name;
+    return rName.toLowerCase().includes(search.toLowerCase());
+  });
+
+  // Helper to get translated name
+  const getItemName = (item: any) => {
+    if (!item) return 'Unknown Item';
+    if (lang === 'es' && item.name_es) return item.name_es;
+    return item.name;
+  };
+
+  const getRecipeName = (recipe: any) => {
+    if (!recipe) return '';
+    if (lang === 'es' && recipe.name_es) return recipe.name_es;
+    return recipe.name;
+  };
 
   return (
     <div className="app-container" style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
@@ -263,7 +277,7 @@ function App() {
                         )}
                       </div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '15px' }}>{r.name}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '15px' }}>{getRecipeName(r)}</div>
                         <div style={{ fontSize: '12px', color: 'var(--secondary)' }}>{getProfessionName(r.profession, lang)} • Lv{r.min_level}-{r.max_level}</div>
                       </div>
                       <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '18px' }}>+</button>
@@ -292,7 +306,7 @@ function App() {
                       )}
                     </div>
                     <div>
-                      <h2 style={{ fontSize: '28px', color: 'var(--text-main)', margin: '0 0 5px 0' }}>{selectedRecipe.name}</h2>
+                      <h2 style={{ fontSize: '28px', color: 'var(--text-main)', margin: '0 0 5px 0' }}>{getRecipeName(selectedRecipe)}</h2>
                       <div style={{ color: 'var(--accent)', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                         {getProfessionName(selectedRecipe.profession, lang)} • Lv {selectedRecipe.min_level} - {selectedRecipe.max_level}
                       </div>
@@ -305,7 +319,7 @@ function App() {
                       {(typeof selectedRecipe.products === 'string' ? JSON.parse(selectedRecipe.products || '[]') : (selectedRecipe.products || [])).map((p: any, idx: number) => (
                         <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '15px', background: 'var(--bg-card)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border)', marginBottom: '10px' }}>
                           <img src={`/icons/icon_${p[0]}.png`} style={{ width: '32px', height: '32px' }} onError={(e) => e.currentTarget.style.display='none'} />
-                          <div style={{ flex: 1 }}>{recipeItems[p[0]]?.name || `Item #${p[0]}`}</div>
+                          <div style={{ flex: 1 }}>{recipeItems[p[0]] ? getItemName(recipeItems[p[0]]) : `Item #${p[0]}`}</div>
                           <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#10b981' }}>x{p[2]}</div>
                         </div>
                       ))}
@@ -323,7 +337,7 @@ function App() {
                             {mGroup.t && mGroup.t.map((mat: any, mIdx: number) => (
                               <div key={mIdx} style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '8px 5px' }}>
                                 <img src={`/icons/icon_${mat[0]}.png`} style={{ width: '28px', height: '28px' }} onError={(e) => e.currentTarget.style.display='none'} />
-                                <div style={{ flex: 1, color: 'var(--text-muted)' }}>{recipeItems[mat[0]]?.name || `Item #${mat[0]}`}</div>
+                                <div style={{ flex: 1, color: 'var(--text-muted)' }}>{recipeItems[mat[0]] ? getItemName(recipeItems[mat[0]]) : `Item #${mat[0]}`}</div>
                                 <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-main)' }}>x{mat[2]}</div>
                               </div>
                             ))}
