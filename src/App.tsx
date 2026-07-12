@@ -372,6 +372,33 @@ function App() {
                     </div>
                   </div>
 
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '10px', marginBottom: '30px' }}>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px' }}>
+                      <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--secondary)', marginBottom: '4px' }}>{lang === 'es' ? 'TIEMPO' : 'CRAFT TIME'}</div>
+                      <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-main)' }}>{selectedRecipe.craft_time ? selectedRecipe.craft_time / 1000 + 's' : '0s'}</div>
+                    </div>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px' }}>
+                      <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--secondary)', marginBottom: '4px' }}>{lang === 'es' ? 'NIVEL' : 'LEVEL'}</div>
+                      <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-main)' }}>{selectedRecipe.min_level} - {selectedRecipe.max_level}</div>
+                    </div>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px' }}>
+                      <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--secondary)', marginBottom: '4px' }}>{lang === 'es' ? 'EXP CRAFTEO' : 'CRAFT XP'}</div>
+                      <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-main)' }}>{selectedRecipe.craft_xp || 0}</div>
+                    </div>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px' }}>
+                      <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--secondary)', marginBottom: '4px' }}>{lang === 'es' ? 'EXP PJE' : 'CHAR XP'}</div>
+                      <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-main)' }}>{selectedRecipe.char_xp || 0}</div>
+                    </div>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px' }}>
+                      <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--secondary)', marginBottom: '4px' }}>{lang === 'es' ? 'A MANO' : 'HAND CRAFT'}</div>
+                      <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-main)' }}>{selectedRecipe.handcraft ? (lang === 'es' ? 'Sí' : 'Yes') : 'No'}</div>
+                    </div>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px' }}>
+                      <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--secondary)', marginBottom: '4px' }}>{lang === 'es' ? 'FUEGO MIN' : 'MIN HEAT'}</div>
+                      <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-main)' }}>{selectedRecipe.min_heat || (lang === 'es' ? 'Ninguno' : 'None')}</div>
+                    </div>
+                  </div>
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
                     <div>
                       <h3 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '15px' }}>{lang === 'es' ? 'Productos' : 'Products'}</h3>
@@ -379,6 +406,7 @@ function App() {
                         <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '15px', background: 'var(--bg-card)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border)', marginBottom: '10px' }}>
                           <img src={`/icons/icon_${p[0]}.png`} style={{ width: '32px', height: '32px' }} onError={(e) => e.currentTarget.style.display='none'} />
                           <div style={{ flex: 1 }}>{recipeItems[p[0]] ? getItemName(recipeItems[p[0]]) : `Item #${p[0]}`}</div>
+                          {p[4] && <div style={{ fontSize: '14px', color: 'var(--secondary)' }}>{(p[4] / 10000).toFixed(p[4] % 10000 === 0 ? 0 : 1)}%</div>}
                           <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#10b981' }}>x{p[2]}</div>
                         </div>
                       ))}
