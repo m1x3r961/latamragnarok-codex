@@ -69,6 +69,14 @@ function App() {
   const [recipeItems, setRecipeItems] = useState<Record<number, any>>({});
   const [activeTab, setActiveTab] = useState<'recipes' | 'calculator'>('recipes');
   
+  type CartItem = {
+    recipe: any;
+    quantity: number;
+    choices: Record<number, number>;
+  };
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [calcSearch, setCalcSearch] = useState('');
+  
   const getRecipeIconId = (products: any) => {
     try {
       const p = typeof products === 'string' ? JSON.parse(products) : products;
@@ -186,6 +194,75 @@ function App() {
     return recipe.name;
   };
 
+  const addToCart = (e: React.MouseEvent, recipe: any) => {
+    e.stopPropagation();
+    setCart(prev => {
+      const existing = prev.find(item => item.recipe.id === recipe.id);
+      if (existing) {
+        return prev.map(item => item.recipe.id === recipe.id ? { ...item, quantity: item.quantity + 1 } : item);
+      }
+      const defaultChoices: Record<number, number> = {};
+      const materials = typeof recipe.materials === 'string' ? JSON.parse(recipe.materials || '[]') : (recipe.materials || []);
+      materials.forEach((mGroup: any, gIdx: number) => {
+        if (mGroup.g === 1) defaultChoices[gIdx] = 0;
+      });
+      return [...prev, { recipe, quantity: 1, choices: defaultChoices }];
+    });
+  };
+
+  const updateCartQty = (recipeId: number, delta: number) => {
+    setCart(prev => prev.map(item => {
+      if (item.recipe.id === recipeId) {
+        const newQty = Math.max(1, item.quantity + delta);
+        return { ...item, quantity: newQty };
+      }
+      return item;
+    }));
+  };
+
+  const removeFromCart = (recipeId: number) => {
+    setCart(prev => prev.filter(item => item.recipe.id !== recipeId));
+  };
+
+  const setChoice = (recipeId: number, gIdx: number, mIdx: number) => {
+    setCart(prev => prev.map(item => {
+      if (item.recipe.id === recipeId) {
+        return { ...item, choices: { ...item.choices, [gIdx]: mIdx } };
+      }
+      return item;
+    }));
+  };
+
+  const calcFilteredRecipes = recipes.filter(r => {
+    if (!calcSearch) return false;
+    const rName = lang === 'es' && r.name_es ? r.name_es : r.name;
+    return rName.toLowerCase().includes(calcSearch.toLowerCase());
+  }).slice(0, 10);
+
+  const getMaterialSummary = () => {
+    const summary: Record<number, number> = {};
+    let totalCrafts = 0;
+    cart.forEach(item => {
+      totalCrafts += item.quantity;
+      const materials = typeof item.recipe.materials === 'string' ? JSON.parse(item.recipe.materials || '[]') : (item.recipe.materials || []);
+      materials.forEach((mGroup: any, gIdx: number) => {
+        if (mGroup.g === 1) {
+          const selected = mGroup.t[item.choices[gIdx] || 0];
+          if (selected) {
+            summary[selected[0]] = (summary[selected[0]] || 0) + (selected[2] * item.quantity);
+          }
+        } else {
+          mGroup.t?.forEach((mat: any) => {
+            summary[mat[0]] = (summary[mat[0]] || 0) + (mat[2] * item.quantity);
+          });
+        }
+      });
+    });
+    return { summary, totalCrafts };
+  };
+
+  const { summary: materialSummary, totalCrafts } = getMaterialSummary();
+
   return (
     <div className="app-container" style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       {/* Header */}
@@ -280,7 +357,7 @@ function App() {
                         <div style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '15px' }}>{getRecipeName(r)}</div>
                         <div style={{ fontSize: '12px', color: 'var(--secondary)' }}>{getProfessionName(r.profession, lang)} • Lv{r.min_level}-{r.max_level}</div>
                       </div>
-                      <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '18px' }}>+</button>
+                      <button onClick={(e) => addToCart(e, r)} style={{ background: 'var(--bg-hover)', border: '1px solid var(--border)', color: 'var(--accent)', fontSize: '18px', width: '30px', height: '30px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>+</button>
                     </motion.div>
                   );
                 })}
@@ -353,9 +430,138 @@ function App() {
         )}
 
         {activeTab === 'calculator' && (
-          <section style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-             <h2>{lang === 'es' ? 'Calculadora en Desarrollo' : 'Calculator in Development'}</h2>
-          </section>
+          <>
+            <aside className="sidebar glass" style={{ width: '400px', borderRight: '1px solid var(--border)', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+              <div className="search-box" style={{ padding: '20px', borderBottom: '1px solid var(--border)', position: 'relative' }}>
+                <input 
+                  type="text" 
+                  placeholder={lang === 'es' ? "Buscar receta para añadir..." : "Search recipe to add..."}
+                  value={calcSearch} 
+                  onChange={(e) => setCalcSearch(e.target.value)} 
+                  style={{ width: '100%', padding: '12px 15px', borderRadius: '8px', background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border)', color: 'white' }} 
+                />
+                {calcSearch && (
+                  <div style={{ position: 'absolute', top: '100%', left: '20px', right: '20px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', zIndex: 10, maxHeight: '200px', overflowY: 'auto', marginTop: '5px' }}>
+                    {calcFilteredRecipes.map(r => (
+                      <div key={r.id} onClick={(e) => { addToCart(e, r); setCalcSearch(''); }} style={{ padding: '10px', borderBottom: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <img src={`/icons/icon_${getRecipeIconId(r.products)}.png`} style={{ width: '24px', height: '24px' }} onError={(e) => e.currentTarget.style.display='none'} />
+                        <span style={{ fontSize: '14px', color: 'var(--text-main)' }}>{getRecipeName(r)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div style={{ flex: 1, padding: '15px', overflowY: 'auto' }}>
+                {cart.length === 0 ? (
+                  <div style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '40px' }}>
+                    <Calculator size={40} style={{ opacity: 0.2, marginBottom: '10px' }} />
+                    <p>{lang === 'es' ? 'Tu calculadora está vacía.' : 'Your calculator is empty.'}</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--secondary)' }}>{lang === 'es' ? 'RECETAS EN CALCULADORA' : 'RECIPES IN CALCULATOR'}</span>
+                    <button onClick={() => setCart([])} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '12px' }}>
+                      {lang === 'es' ? 'Limpiar Todo' : 'Clear All'}
+                    </button>
+                  </div>
+                )}
+                
+                {cart.map(item => {
+                  const iconId = getRecipeIconId(item.recipe.products);
+                  const materials = typeof item.recipe.materials === 'string' ? JSON.parse(item.recipe.materials || '[]') : (item.recipe.materials || []);
+                  
+                  return (
+                    <div key={item.recipe.id} style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid var(--border)', borderRadius: '8px', marginBottom: '15px', overflow: 'hidden' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', padding: '12px', gap: '10px' }}>
+                        <div style={{ width: '32px', height: '32px', background: 'var(--bg-card)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {iconId ? <img src={`/icons/icon_${iconId}.png`} style={{ width: '24px', height: '24px' }} onError={(e) => e.currentTarget.style.display='none'} /> : '⚒️'}
+                        </div>
+                        <div style={{ flex: 1, fontWeight: 600, fontSize: '14px', color: 'var(--text-main)' }}>{getRecipeName(item.recipe)}</div>
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-card)', padding: '4px', borderRadius: '4px', border: '1px solid var(--border)' }}>
+                          <button onClick={() => updateCartQty(item.recipe.id, -1)} style={{ background: 'none', border: 'none', color: 'var(--text-main)', cursor: 'pointer', width: '20px' }}>-</button>
+                          <span style={{ fontSize: '14px', minWidth: '20px', textAlign: 'center', color: 'var(--accent)' }}>{item.quantity}</span>
+                          <button onClick={() => updateCartQty(item.recipe.id, 1)} style={{ background: 'none', border: 'none', color: 'var(--text-main)', cursor: 'pointer', width: '20px' }}>+</button>
+                        </div>
+                        <button onClick={() => removeFromCart(item.recipe.id)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', marginLeft: '5px' }}>×</button>
+                      </div>
+                      
+                      {materials.some((m: any) => m.g === 1) && (
+                        <div style={{ borderTop: '1px solid var(--border)', padding: '10px 12px', background: 'rgba(255,255,255,0.02)' }}>
+                          {materials.map((mGroup: any, gIdx: number) => {
+                            if (mGroup.g !== 1) return null;
+                            return (
+                              <div key={gIdx} style={{ marginBottom: '10px', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
+                                <div style={{ fontSize: '10px', color: 'var(--accent)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '1px' }}>
+                                  SLOT {gIdx + 1} — {lang === 'es' ? 'ELIGE UNO' : 'CHOOSE ONE'}
+                                </div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                  {mGroup.t.map((mat: any, mIdx: number) => {
+                                    const isActive = item.choices[gIdx] === mIdx;
+                                    return (
+                                      <button 
+                                        key={mIdx}
+                                        onClick={() => setChoice(item.recipe.id, gIdx, mIdx)}
+                                        style={{ 
+                                          display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer',
+                                          background: isActive ? 'var(--bg-card)' : 'transparent',
+                                          border: isActive ? '1px solid var(--accent)' : '1px solid var(--border)',
+                                          color: isActive ? 'var(--text-main)' : 'var(--text-muted)'
+                                        }}
+                                      >
+                                        <img src={`/icons/icon_${mat[0]}.png`} style={{ width: '16px', height: '16px', opacity: isActive ? 1 : 0.5 }} onError={(e) => e.currentTarget.style.display='none'} />
+                                        <span style={{ fontSize: '11px' }}>{recipeItems[mat[0]] ? getItemName(recipeItems[mat[0]]) : mat[0]}</span>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </aside>
+
+            <section className="content-area glass" style={{ flex: 1, overflowY: 'auto', padding: '40px', position: 'relative' }}>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                <h2 style={{ fontSize: '28px', color: 'var(--text-main)', marginBottom: '5px' }}>{lang === 'es' ? 'Resumen de Materiales' : 'Material Summary'}</h2>
+                <div style={{ color: 'var(--secondary)', fontSize: '14px', marginBottom: '30px', paddingBottom: '20px', borderBottom: '1px solid var(--border)' }}>
+                  {totalCrafts} {lang === 'es' ? 'crafteos' : 'crafts'} • {Object.keys(materialSummary).length} {lang === 'es' ? 'tipos de material' : 'material types'}
+                </div>
+                
+                {Object.keys(materialSummary).length === 0 ? (
+                  <div style={{ textAlign: 'center', opacity: 0.3, marginTop: '10vh' }}>
+                    <Calculator size={100} style={{ marginBottom: '20px' }} />
+                    <p style={{ fontSize: '18px' }}>{lang === 'es' ? 'Añade recetas para ver los materiales necesarios.' : 'Add recipes to see required materials.'}</p>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ fontSize: '12px', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}>
+                      {lang === 'es' ? 'MATERIALES REQUERIDOS' : 'REQUIRED MATERIALS'}
+                    </div>
+                    
+                    {Object.entries(materialSummary).sort(([,a], [,b]) => (b as number) - (a as number)).map(([itemId, qty]) => (
+                      <div key={itemId} style={{ display: 'flex', alignItems: 'center', padding: '15px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ width: '40px', height: '40px', background: 'var(--bg-hover)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '20px' }}>
+                          <img src={`/icons/icon_${itemId}.png`} style={{ width: '28px', height: '28px' }} onError={(e) => e.currentTarget.style.display='none'} />
+                        </div>
+                        <div style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--text-main)', minWidth: '60px' }}>{String(qty)}</div>
+                        <div style={{ color: 'var(--secondary)', fontSize: '14px', marginRight: '15px' }}>×</div>
+                        <div style={{ flex: 1, fontSize: '16px', color: 'var(--text-main)' }}>
+                          {recipeItems[Number(itemId)] ? getItemName(recipeItems[Number(itemId)]) : `Item #${itemId}`}
+                        </div>
+                        <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Material</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            </section>
+          </>
         )}
 
         <AnimatePresence>
