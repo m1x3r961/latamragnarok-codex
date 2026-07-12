@@ -23,6 +23,53 @@ const translations = {
     dynamicDesc1: "¡Los datos ahora se cargan desde tu base de datos en Supabase!",
     dynamicDesc2: "Siguiente paso: Conectar una API de IA al botón de 'Consultar IA'.",
     language: "EN", // Text on the button to switch TO English
+    guideCategories: [
+      { 
+        title: "Empezando", 
+        items: [
+          { id: 'character_statistics', name: 'Estadísticas del Personaje' },
+          { id: 'combat', name: 'Combate' },
+          { id: 'armour', name: 'Armaduras' },
+          { id: 'weapons', name: 'Armas' }
+        ]
+      },
+      { 
+        title: "Comunidad y Cooperación", 
+        items: [
+          { id: 'nations', name: 'Naciones' },
+          { id: 'parties', name: 'Grupos (Parties)' },
+          { id: 'guilds', name: 'Gremios (Guilds)' },
+          { id: 'alliances', name: 'Alianzas' }
+        ]
+      },
+      { 
+        title: "Compitiendo en PvP", 
+        items: [
+          { id: 'glory', name: 'Gloria' },
+          { id: 'sieges', name: 'Asedios' },
+          { id: 'state_of_war', name: 'Estado de Guerra' },
+          { id: 'looting', name: 'Saqueo' }
+        ]
+      },
+      { 
+        title: "Recorriendo el Mundo", 
+        items: [
+          { id: 'the_map', name: 'El Mapa' },
+          { id: 'fast_travel', name: 'Viaje Rápido' },
+          { id: 'mounts', name: 'Monturas' },
+          { id: 'events', name: 'Eventos' }
+        ]
+      },
+      { 
+        title: "Economía de los Jugadores", 
+        items: [
+          { id: 'the_market', name: 'El Mercado' },
+          { id: 'player_stalls', name: 'Puestos de Jugadores' },
+          { id: 'crafting', name: 'Crafteo' },
+          { id: 'gathering_resources', name: 'Recolección de Recursos' }
+        ]
+      }
+    ],
     professions: {
       '1': 'Herboristería y Alquimia',
       '2': 'Sastrería y Cuero',
@@ -46,6 +93,53 @@ const translations = {
     dynamicDesc1: "Data is now fetched from your Supabase database!",
     dynamicDesc2: "Next step: Connect an AI API to the 'Ask AI' feature.",
     language: "ES", // Text on the button to switch TO Spanish
+    guideCategories: [
+      { 
+        title: "Getting Started", 
+        items: [
+          { id: 'character_statistics', name: 'Character Statistics' },
+          { id: 'combat', name: 'Combat' },
+          { id: 'armour', name: 'Armour' },
+          { id: 'weapons', name: 'Weapons' }
+        ]
+      },
+      { 
+        title: "Community and Cooperation", 
+        items: [
+          { id: 'nations', name: 'Nations' },
+          { id: 'parties', name: 'Parties' },
+          { id: 'guilds', name: 'Guilds' },
+          { id: 'alliances', name: 'Alliances' }
+        ]
+      },
+      { 
+        title: "Competing in PvP", 
+        items: [
+          { id: 'glory', name: 'Glory' },
+          { id: 'sieges', name: 'Sieges' },
+          { id: 'state_of_war', name: 'State of War' },
+          { id: 'looting', name: 'Looting' }
+        ]
+      },
+      { 
+        title: "Traversing The World", 
+        items: [
+          { id: 'the_map', name: 'The Map' },
+          { id: 'fast_travel', name: 'Fast Travel' },
+          { id: 'mounts', name: 'Mounts' },
+          { id: 'events', name: 'Events' }
+        ]
+      },
+      { 
+        title: "Player Driven Economy", 
+        items: [
+          { id: 'the_market', name: 'The Market' },
+          { id: 'player_stalls', name: 'Player Stalls' },
+          { id: 'crafting', name: 'Crafting' },
+          { id: 'gathering_resources', name: 'Gathering Resources' }
+        ]
+      }
+    ],
     professions: {
       '1': 'Herbalism & Alchemy',
       '2': 'Tailoring & Leather',
@@ -586,23 +680,17 @@ function App() {
                 {t.guides}
               </h2>
 
-              {[
-                { title: 'Getting Started', items: ['Character Statistics', 'Combat', 'Armour', 'Weapons'] },
-                { title: 'Community and Cooperation', items: ['Nations', 'Parties', 'Guilds', 'Alliances'] },
-                { title: 'Competing in PvP', items: ['Glory', 'Sieges', 'State of War', 'Looting'] },
-                { title: 'Traversing The World', items: ['The Map', 'Fast Travel', 'Mounts', 'Events'] },
-                { title: 'Player Driven Economy', items: ['The Market', 'Player Stalls', 'Crafting', 'Gathering Resources'] }
-              ].map(category => (
+              {t.guideCategories.map((category: any) => (
                 <div key={category.title} style={{ marginBottom: '40px' }}>
                   <h3 style={{ fontSize: '22px', color: 'var(--accent)', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '1px' }}>{category.title}</h3>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
-                    {category.items.map(guide => (
-                      <div key={guide} className="glass-card" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer' }}>
+                    {category.items.map((guide: any) => (
+                      <div key={guide.id} className="glass-card" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer' }}>
                         <div style={{ height: '140px', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <img src={`/guides/${guide.toLowerCase().replace(/ /g, '_')}.png`} alt={guide} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = `<span style="color:var(--secondary);font-size:12px;padding:10px;text-align:center">/guides/${guide.toLowerCase().replace(/ /g, '_')}.png</span>`; }} />
+                          <img src={`/guides/${guide.id}.png`} alt={guide.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = `<span style="color:var(--secondary);font-size:12px;padding:10px;text-align:center">/guides/${guide.id}.png</span>`; }} />
                         </div>
                         <div style={{ padding: '15px', textAlign: 'center', fontWeight: 'bold', color: 'var(--text-main)' }}>
-                          {guide}
+                          {guide.name}
                         </div>
                       </div>
                     ))}
