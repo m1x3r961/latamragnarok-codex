@@ -118,63 +118,29 @@ function App() {
   };
 
   useEffect(() => {
-    if (selectedRecipe) {
-      // Helper to parse if string
-      const parseJSON = (data: any) => {
-        if (typeof data === 'string') {
-          try { return JSON.parse(data); } catch { return []; }
-        }
-        return data || [];
-      };
-
-      const products = parseJSON(selectedRecipe.products);
-      const materials = parseJSON(selectedRecipe.materials);
-
-      const itemIds = new Set<number>();
+    const fetchData = async () => {
+      const [recipesRes, itemsRes] = await Promise.all([
+        supabase.from('recipes').select('*'),
+        supabase.from('items').select('*')
+      ]);
       
-      // Products: p is array of [itemId, type, qty, ... ]
-      if (products) {
-        products.forEach((p: any) => itemIds.add(p[0]));
-      }
+      if (recipesRes.error) console.error(recipesRes.error);
+      if (recipesRes.data) setRecipes(recipesRes.data);
       
-      // Materials: m is array of {g: group, t: array of [itemId, type, qty, ... ]}
-      if (materials) {
-        materials.forEach((mGroup: any) => {
-          if (mGroup.t) {
-            mGroup.t.forEach((t: any) => itemIds.add(t[0]));
-          }
-        });
+      if (itemsRes.error) console.error(itemsRes.error);
+      if (itemsRes.data) {
+        const itemsMap: Record<number, any> = {};
+        itemsRes.data.forEach(item => itemsMap[item.id] = item);
+        setRecipeItems(itemsMap);
       }
-
-      const fetchItems = async () => {
-        const { data, error } = await supabase
-          .from('items')
-          .select('*')
-          .in('id', Array.from(itemIds));
-          
-        if (data && !error) {
-          const itemsMap: Record<number, any> = {};
-          data.forEach(item => itemsMap[item.id] = item);
-          setRecipeItems(itemsMap);
-        }
-      };
-
-      fetchItems();
-    }
-  }, [selectedRecipe]);
+    };
+    
+    fetchData();
+  }, []);
 
   const toggleLanguage = () => {
     setLang(lang === 'es' ? 'en' : 'es');
   };
-
-  useEffect(() => {
-    const fetchRecipes = async () => {
-      const { data, error } = await supabase.from('recipes').select('*').limit(50);
-      if (error) console.error(error);
-      if (data) setRecipes(data);
-    };
-    fetchRecipes();
-  }, []);
 
   const filteredRecipes = recipes.filter(r => {
     const rName = lang === 'es' && r.name_es ? r.name_es : r.name;
