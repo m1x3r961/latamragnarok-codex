@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Calculator, Globe, Send, Sparkles, Shield } from 'lucide-react';
+import { BookOpen, Calculator, Globe, Send, Sparkles, Shield, Map } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from './supabaseClient';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -14,6 +14,7 @@ const translations = {
     subtitle: "Crafteo con IA",
     recipes: "Recetas",
     calculator: "Calculadora",
+    guides: "Guías",
     askAi: "Consultar IA",
     searchPlaceholder: "Buscar recetas...",
     loading: "Cargando recetas...",
@@ -36,6 +37,7 @@ const translations = {
     subtitle: "AI Powered Crafting",
     recipes: "Recipes",
     calculator: "Calculator",
+    guides: "Guides",
     askAi: "Ask AI",
     searchPlaceholder: "Search recipes...",
     loading: "Loading recipes...",
@@ -67,7 +69,7 @@ function App() {
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
   const [recipeItems, setRecipeItems] = useState<Record<number, any>>({});
-  const [activeTab, setActiveTab] = useState<'recipes' | 'calculator'>('recipes');
+  const [activeTab, setActiveTab] = useState<'recipes' | 'calculator' | 'guides'>('recipes');
   
   type CartItem = {
     recipe: any;
@@ -280,6 +282,9 @@ function App() {
           </button>
           <button className={activeTab === 'calculator' ? 'primary' : ''} onClick={() => setActiveTab('calculator')} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Calculator size={16} /> {t.calculator}
+          </button>
+          <button className={activeTab === 'guides' ? 'primary' : ''} onClick={() => setActiveTab('guides')} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Map size={16} /> {t.guides}
           </button>
         </div>
 
@@ -572,6 +577,41 @@ function App() {
               </motion.div>
             </section>
           </>
+        )}
+
+        {activeTab === 'guides' && (
+          <section className="content-area glass" style={{ flex: 1, overflowY: 'auto', padding: '40px' }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+              <h2 style={{ fontSize: '32px', color: 'var(--text-main)', marginBottom: '30px', borderBottom: '2px solid var(--accent)', paddingBottom: '10px' }}>
+                {t.guides}
+              </h2>
+
+              {[
+                { title: 'Getting Started', items: ['Character Statistics', 'Combat', 'Armour', 'Weapons'] },
+                { title: 'Community and Cooperation', items: ['Nations', 'Parties', 'Guilds', 'Alliances'] },
+                { title: 'Competing in PvP', items: ['Glory', 'Sieges', 'State of War', 'Looting'] },
+                { title: 'Traversing The World', items: ['The Map', 'Fast Travel', 'Mounts', 'Events'] },
+                { title: 'Player Driven Economy', items: ['The Market', 'Player Stalls', 'Crafting', 'Gathering Resources'] }
+              ].map(category => (
+                <div key={category.title} style={{ marginBottom: '40px' }}>
+                  <h3 style={{ fontSize: '22px', color: 'var(--accent)', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '1px' }}>{category.title}</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
+                    {category.items.map(guide => (
+                      <div key={guide} className="glass-card" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer' }}>
+                        <div style={{ height: '140px', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <img src={`/guides/${guide.toLowerCase().replace(/ /g, '_')}.png`} alt={guide} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = `<span style="color:var(--secondary);font-size:12px;padding:10px;text-align:center">/guides/${guide.toLowerCase().replace(/ /g, '_')}.png</span>`; }} />
+                        </div>
+                        <div style={{ padding: '15px', textAlign: 'center', fontWeight: 'bold', color: 'var(--text-main)' }}>
+                          {guide}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+            </div>
+          </section>
         )}
 
         <AnimatePresence>
