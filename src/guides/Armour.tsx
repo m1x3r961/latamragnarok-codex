@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Shield, Layers, Activity, Zap, TrendingUp, Crosshair } from 'lucide-react';
+import { ArrowLeft, Shield, Layers, Activity, TrendingUp } from 'lucide-react';
 
 interface Props {
   onBack: () => void;
