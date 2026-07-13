@@ -6,6 +6,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { CharacterStatistics } from './guides/CharacterStatistics';
 import { Combat } from './guides/Combat';
 import { Armour } from './guides/Armour';
+import { Weapons } from './guides/Weapons';
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
@@ -685,6 +686,8 @@ function App() {
               <Combat onBack={() => setSelectedGuide(null)} lang={lang} />
             ) : selectedGuide === 'armour' ? (
               <Armour onBack={() => setSelectedGuide(null)} lang={lang} />
+            ) : selectedGuide === 'weapons' ? (
+              <Weapons onBack={() => setSelectedGuide(null)} lang={lang} />
             ) : (
               <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                 <h2 style={{ fontSize: '32px', color: 'var(--text-main)', marginBottom: '30px', borderBottom: '2px solid var(--accent)', paddingBottom: '10px' }}>
