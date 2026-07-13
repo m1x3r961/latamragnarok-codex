@@ -3,6 +3,7 @@ import { BookOpen, Calculator, Globe, Send, Sparkles, Shield, Map } from 'lucide
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from './supabaseClient';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { CharacterStatistics } from './guides/CharacterStatistics';
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
@@ -162,6 +163,7 @@ function App() {
   const [lang, setLang] = useState<'es' | 'en'>('es');
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
+  const [selectedGuide, setSelectedGuide] = useState<string | null>(null);
   const [recipeItems, setRecipeItems] = useState<Record<number, any>>({});
   const [activeTab, setActiveTab] = useState<'recipes' | 'calculator' | 'guides'>('recipes');
   
@@ -377,7 +379,7 @@ function App() {
           <button className={activeTab === 'calculator' ? 'primary' : ''} onClick={() => setActiveTab('calculator')} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Calculator size={16} /> {t.calculator}
           </button>
-          <button className={activeTab === 'guides' ? 'primary' : ''} onClick={() => setActiveTab('guides')} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button className={activeTab === 'guides' ? 'primary' : ''} onClick={() => { setActiveTab('guides'); setSelectedGuide(null); }} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Map size={16} /> {t.guides}
           </button>
         </div>
@@ -675,30 +677,33 @@ function App() {
 
         {activeTab === 'guides' && (
           <section className="content-area glass" style={{ flex: 1, overflowY: 'auto', padding: '40px' }}>
-            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-              <h2 style={{ fontSize: '32px', color: 'var(--text-main)', marginBottom: '30px', borderBottom: '2px solid var(--accent)', paddingBottom: '10px' }}>
-                {t.guides}
-              </h2>
+            {selectedGuide === 'character_statistics' ? (
+              <CharacterStatistics onBack={() => setSelectedGuide(null)} lang={lang} />
+            ) : (
+              <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                <h2 style={{ fontSize: '32px', color: 'var(--text-main)', marginBottom: '30px', borderBottom: '2px solid var(--accent)', paddingBottom: '10px' }}>
+                  {t.guides}
+                </h2>
 
-              {t.guideCategories.map((category: any) => (
-                <div key={category.title} style={{ marginBottom: '40px' }}>
-                  <h3 style={{ fontSize: '22px', color: 'var(--accent)', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '1px' }}>{category.title}</h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
-                    {category.items.map((guide: any) => (
-                      <div key={guide.id} className="glass-card" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer' }}>
-                        <div style={{ height: '140px', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <img src={`/guides/${guide.id}.png`} alt={guide.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = `<span style="color:var(--secondary);font-size:12px;padding:10px;text-align:center">/guides/${guide.id}.png</span>`; }} />
+                {t.guideCategories.map((category: any) => (
+                  <div key={category.title} style={{ marginBottom: '40px' }}>
+                    <h3 style={{ fontSize: '22px', color: 'var(--accent)', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '1px' }}>{category.title}</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
+                      {category.items.map((guide: any) => (
+                        <div key={guide.id} onClick={() => setSelectedGuide(guide.id)} className="glass-card" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer' }}>
+                          <div style={{ height: '140px', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <img src={`/guides/${guide.id}.png`} alt={guide.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = `<span style="color:var(--secondary);font-size:12px;padding:10px;text-align:center">/guides/${guide.id}.png</span>`; }} />
+                          </div>
+                          <div style={{ padding: '15px', textAlign: 'center', fontWeight: 'bold', color: 'var(--text-main)' }}>
+                            {guide.name}
+                          </div>
                         </div>
-                        <div style={{ padding: '15px', textAlign: 'center', fontWeight: 'bold', color: 'var(--text-main)' }}>
-                          {guide.name}
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-
-            </div>
+                ))}
+              </div>
+            )}
           </section>
         )}
 
