@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Handshake, Shield, Map, Clock, Crown, Users } from 'lucide-react';
+import { ArrowLeft, Handshake, Map, Clock, Crown, Users } from 'lucide-react';
 
 interface Props {
   onBack: () => void;
