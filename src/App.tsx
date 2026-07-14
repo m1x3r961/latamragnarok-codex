@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Calculator, Globe, Send, Sparkles, Shield, Map } from 'lucide-react';
+import { BookOpen, Calculator, Globe, Send, Sparkles, Shield, Map, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from './supabaseClient';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -36,6 +36,7 @@ const translations = {
     recipes: "Recetas",
     calculator: "Calculadora",
     guides: "Guías",
+    map: "Mapa",
     askAi: "Consultar IA",
     searchPlaceholder: "Buscar recetas...",
     loading: "Cargando recetas...",
@@ -106,6 +107,7 @@ const translations = {
     recipes: "Recipes",
     calculator: "Calculator",
     guides: "Guides",
+    map: "Map",
     askAi: "Ask AI",
     searchPlaceholder: "Search recipes...",
     loading: "Loading recipes...",
@@ -185,7 +187,7 @@ function App() {
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
   const [selectedGuide, setSelectedGuide] = useState<string | null>(null);
   const [recipeItems, setRecipeItems] = useState<Record<number, any>>({});
-  const [activeTab, setActiveTab] = useState<'recipes' | 'calculator' | 'guides'>('recipes');
+  const [activeTab, setActiveTab] = useState<'recipes' | 'calculator' | 'guides' | 'map'>('recipes');
   
   type CartItem = {
     recipe: any;
@@ -401,6 +403,9 @@ function App() {
           </button>
           <button className={activeTab === 'guides' ? 'primary' : ''} onClick={() => { setActiveTab('guides'); setSelectedGuide(null); }} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Map size={16} /> {t.guides}
+          </button>
+          <button className={activeTab === 'map' ? 'primary' : ''} onClick={() => setActiveTab('map')} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <MapPin size={16} /> {t.map}
           </button>
         </div>
 
@@ -764,6 +769,25 @@ function App() {
                 ))}
               </div>
             )}
+          </section>
+        )}
+
+        {activeTab === 'map' && (
+          <section className="content-area glass" style={{ flex: 1, overflowY: 'auto', padding: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ textAlign: 'center' }}>
+              <MapPin size={100} color="var(--accent)" style={{ margin: '0 auto', opacity: 0.5 }} />
+              <h1 style={{ color: 'white', fontSize: '48px', margin: '20px 0 10px 0' }}>
+                {lang === 'es' ? 'Mapa Interactivo' : 'Interactive Map'}
+              </h1>
+              <h2 style={{ color: 'var(--accent)', fontSize: '32px', margin: 0 }}>
+                {lang === 'es' ? '¡Muy pronto!' : 'Coming soon!'}
+              </h2>
+              <p style={{ color: 'var(--text-muted)', marginTop: '20px', fontSize: '18px' }}>
+                {lang === 'es' 
+                  ? 'Nuestros cartógrafos están explorando el mundo...'
+                  : 'Our cartographers are exploring the world...'}
+              </p>
+            </div>
           </section>
         )}
 
