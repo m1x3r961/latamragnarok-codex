@@ -22,6 +22,8 @@ import { Events } from './guides/Events';
 import { TheMarket } from './guides/TheMarket';
 import { PlayerStalls } from './guides/PlayerStalls';
 import { Crafting } from './guides/Crafting';
+import { Gathering } from './guides/Gathering';
+import { Fishing } from './guides/Fishing';
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
@@ -733,6 +735,10 @@ function App() {
               <PlayerStalls onBack={() => setSelectedGuide(null)} lang={lang} />
             ) : selectedGuide === 'crafting' ? (
               <Crafting onBack={() => setSelectedGuide(null)} lang={lang} />
+            ) : selectedGuide === 'gathering' ? (
+              <Gathering onBack={() => setSelectedGuide(null)} lang={lang} onNavigate={setSelectedGuide} />
+            ) : selectedGuide === 'fishing' ? (
+              <Fishing onBack={() => setSelectedGuide('gathering')} lang={lang} />
             ) : (
               <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                 <h2 style={{ fontSize: '32px', color: 'var(--text-main)', marginBottom: '30px', borderBottom: '2px solid var(--accent)', paddingBottom: '10px' }}>
