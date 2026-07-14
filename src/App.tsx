@@ -21,6 +21,7 @@ import { Mounts } from './guides/Mounts';
 import { Events } from './guides/Events';
 import { TheMarket } from './guides/TheMarket';
 import { PlayerStalls } from './guides/PlayerStalls';
+import { Crafting } from './guides/Crafting';
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
@@ -730,6 +731,8 @@ function App() {
               <TheMarket onBack={() => setSelectedGuide(null)} lang={lang} />
             ) : selectedGuide === 'player_stalls' ? (
               <PlayerStalls onBack={() => setSelectedGuide(null)} lang={lang} />
+            ) : selectedGuide === 'crafting' ? (
+              <Crafting onBack={() => setSelectedGuide(null)} lang={lang} />
             ) : (
               <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                 <h2 style={{ fontSize: '32px', color: 'var(--text-main)', marginBottom: '30px', borderBottom: '2px solid var(--accent)', paddingBottom: '10px' }}>
