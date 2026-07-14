@@ -19,7 +19,7 @@ export const Mounts: React.FC<Props> = ({ onBack, lang }) => {
 
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
         {/* Cabecera */}
-        <div style={{ height: '300px', backgroundImage: 'url(/mounts/mountriding.png)', backgroundColor: '#3f2c22', backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
+        <div style={{ height: '300px', backgroundImage: 'url(/guides/mounts.png)', backgroundColor: '#3f2c22', backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, var(--bg-main) 0%, rgba(0,0,0,0.5) 100%)' }}></div>
           <h1 style={{ position: 'absolute', bottom: '20px', left: '30px', fontSize: '42px', color: 'white', textShadow: '0 2px 10px rgba(0,0,0,0.8)', margin: 0, display: 'flex', alignItems: 'center', gap: '15px' }}>
             <Star size={40} color="#facc15" /> {lang === 'es' ? 'Guía de Monturas' : 'Mounts Guide'}
@@ -76,7 +76,7 @@ export const Mounts: React.FC<Props> = ({ onBack, lang }) => {
               <h2 style={{ color: 'var(--accent)', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Activity size={24} /> {lang === 'es' ? 'Atributos de la Montura' : 'Mount Attributes'}
               </h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
                 <div style={{ background: 'rgba(239, 68, 68, 0.05)', padding: '15px', borderRadius: '8px', border: '1px solid #ef4444' }}>
                   <strong style={{ color: '#ef4444', display: 'block', marginBottom: '5px' }}>Vitality (Vitalidad)</strong>
                   <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{lang === 'es' ? 'Puntos de vida totales y regeneración de HP.' : 'Total health points and HP regen.'}</span>
@@ -94,6 +94,7 @@ export const Mounts: React.FC<Props> = ({ onBack, lang }) => {
                   <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{lang === 'es' ? 'Aceleración y frenado. (No cambia la velocidad máxima).' : 'Acceleration and stopping speed.'}</span>
                 </div>
               </div>
+              <img src="/mounts/mountriding.png" alt="Mount Stats Panel" style={{ width: '100%', borderRadius: '8px', border: '1px solid var(--border)' }} onError={(e) => e.currentTarget.style.display='none'} />
 
             </div>
 
