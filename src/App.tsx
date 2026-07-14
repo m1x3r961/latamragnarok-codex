@@ -13,6 +13,7 @@ import { Guilds } from './guides/Guilds';
 import { Alliances } from './guides/Alliances';
 import { Glory } from './guides/Glory';
 import { Sieges } from './guides/Sieges';
+import { StateOfWar } from './guides/StateOfWar';
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
@@ -706,6 +707,8 @@ function App() {
               <Glory onBack={() => setSelectedGuide(null)} lang={lang} />
             ) : selectedGuide === 'sieges' ? (
               <Sieges onBack={() => setSelectedGuide(null)} lang={lang} />
+            ) : selectedGuide === 'state_of_war' ? (
+              <StateOfWar onBack={() => setSelectedGuide(null)} lang={lang} />
             ) : (
               <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                 <h2 style={{ fontSize: '32px', color: 'var(--text-main)', marginBottom: '30px', borderBottom: '2px solid var(--accent)', paddingBottom: '10px' }}>
