@@ -10,6 +10,7 @@ import { Weapons } from './guides/Weapons';
 import { Nations } from './guides/Nations';
 import { Parties } from './guides/Parties';
 import { Guilds } from './guides/Guilds';
+import { Alliances } from './guides/Alliances';
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
@@ -697,6 +698,8 @@ function App() {
               <Parties onBack={() => setSelectedGuide(null)} lang={lang} />
             ) : selectedGuide === 'guilds' ? (
               <Guilds onBack={() => setSelectedGuide(null)} lang={lang} />
+            ) : selectedGuide === 'alliances' ? (
+              <Alliances onBack={() => setSelectedGuide(null)} lang={lang} />
             ) : (
               <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                 <h2 style={{ fontSize: '32px', color: 'var(--text-main)', marginBottom: '30px', borderBottom: '2px solid var(--accent)', paddingBottom: '10px' }}>
