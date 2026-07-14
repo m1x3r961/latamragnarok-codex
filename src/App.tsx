@@ -17,6 +17,7 @@ import { StateOfWar } from './guides/StateOfWar';
 import { Looting } from './guides/Looting';
 import { TheMap } from './guides/TheMap';
 import { FastTravel } from './guides/FastTravel';
+import { Mounts } from './guides/Mounts';
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
@@ -718,6 +719,8 @@ function App() {
               <TheMap onBack={() => setSelectedGuide(null)} lang={lang} />
             ) : selectedGuide === 'fast_travel' ? (
               <FastTravel onBack={() => setSelectedGuide(null)} lang={lang} />
+            ) : selectedGuide === 'mounts' ? (
+              <Mounts onBack={() => setSelectedGuide(null)} lang={lang} />
             ) : (
               <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                 <h2 style={{ fontSize: '32px', color: 'var(--text-main)', marginBottom: '30px', borderBottom: '2px solid var(--accent)', paddingBottom: '10px' }}>
