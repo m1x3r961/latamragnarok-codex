@@ -24,6 +24,7 @@ import { PlayerStalls } from './guides/PlayerStalls';
 import { Crafting } from './guides/Crafting';
 import { Gathering } from './guides/Gathering';
 import { Fishing } from './guides/Fishing';
+import { InteractiveMap } from './guides/InteractiveMap';
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
@@ -773,22 +774,7 @@ function App() {
         )}
 
         {activeTab === 'map' && (
-          <section className="content-area glass" style={{ flex: 1, overflowY: 'auto', padding: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ textAlign: 'center' }}>
-              <MapPin size={100} color="var(--accent)" style={{ margin: '0 auto', opacity: 0.5 }} />
-              <h1 style={{ color: 'white', fontSize: '48px', margin: '20px 0 10px 0' }}>
-                {lang === 'es' ? 'Mapa Interactivo' : 'Interactive Map'}
-              </h1>
-              <h2 style={{ color: 'var(--accent)', fontSize: '32px', margin: 0 }}>
-                {lang === 'es' ? '¡Muy pronto!' : 'Coming soon!'}
-              </h2>
-              <p style={{ color: 'var(--text-muted)', marginTop: '20px', fontSize: '18px' }}>
-                {lang === 'es' 
-                  ? 'Nuestros cartógrafos están explorando el mundo...'
-                  : 'Our cartographers are exploring the world...'}
-              </p>
-            </div>
-          </section>
+          <InteractiveMap onBack={() => setActiveTab('recipes')} lang={lang} />
         )}
 
         <AnimatePresence>
