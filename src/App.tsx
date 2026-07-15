@@ -33,7 +33,7 @@ const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
 const translations = {
   es: {
     title: "Códice LatamRagnarok",
-    subtitle: "Crafteo con IA",
+    subtitle: "GLORIA VICTIS",
     recipes: "Recetas",
     calculator: "Calculadora",
     guides: "Guías",
@@ -104,7 +104,7 @@ const translations = {
   },
   en: {
     title: "LatamRagnarok Codex",
-    subtitle: "AI Powered Crafting",
+    subtitle: "GLORIA VICTIS",
     recipes: "Recipes",
     calculator: "Calculator",
     guides: "Guides",
