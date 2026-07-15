@@ -97,7 +97,7 @@ export const InteractiveMap: React.FC<Props> = ({ onBack, lang }) => {
     setActiveTypes(next);
   };
 
-  const toggleCategory = (catId: number, typeIds: number[]) => {
+  const toggleCategory = (typeIds: number[]) => {
     const next = new Set(activeTypes);
     const allActive = typeIds.every(id => next.has(id));
     if (allActive) {
@@ -116,7 +116,7 @@ export const InteractiveMap: React.FC<Props> = ({ onBack, lang }) => {
   };
 
   const visibleMarkers = useMemo(() => {
-    return mapData.markers.filter(m => activeTypes.has(m.type_id));
+    return mapData.markers.filter(m => m.type_id != null && activeTypes.has(m.type_id as number));
   }, [activeTypes]);
 
   return (
@@ -137,7 +137,7 @@ export const InteractiveMap: React.FC<Props> = ({ onBack, lang }) => {
           <MapTiles />
           
           {visibleMarkers.map(m => {
-            const t = (mapData.markerTypes as any)[m.type_id];
+            const t = (mapData.markerTypes as any)[String(m.type_id)];
             if (!t) return null;
             return (
               <Marker 
@@ -249,7 +249,7 @@ export const InteractiveMap: React.FC<Props> = ({ onBack, lang }) => {
                       type="checkbox" 
                       checked={allActive}
                       ref={input => { if (input) input.indeterminate = someActive && !allActive; }}
-                      onChange={() => toggleCategory(cat.id, allTypes)}
+                      onChange={() => toggleCategory(allTypes)}
                       style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--accent)' }}
                     />
                   </div>
@@ -285,7 +285,7 @@ export const InteractiveMap: React.FC<Props> = ({ onBack, lang }) => {
                                 type="checkbox" 
                                 checked={subAllActive}
                                 ref={input => { if (input) input.indeterminate = subSomeActive && !subAllActive; }}
-                                onChange={() => toggleCategory(sub.id, subTypeIds)}
+                                onChange={() => toggleCategory(subTypeIds)}
                                 style={{ accentColor: 'var(--accent)' }}
                               />
                             </div>
