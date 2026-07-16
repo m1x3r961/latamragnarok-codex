@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Calculator, Globe, Send, Sparkles, Shield, Map, MapPin } from 'lucide-react';
+import { BookOpen, Calculator, Globe, Send, Sparkles, Shield, Map, MapPin, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from './supabaseClient';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -181,6 +181,7 @@ const getProfessionName = (profId: number, lang: 'es' | 'en') => {
 };
 
 function App() {
+  const [onlineUsers, setOnlineUsers] = useState<number>(1);
   const [search, setSearch] = useState('');
   const [recipes, setRecipes] = useState<any[]>([]);
   const [lang, setLang] = useState<'es' | 'en'>('es');
@@ -273,6 +274,31 @@ function App() {
     };
     
     fetchData();
+
+    // Setup real-time presence for online users
+    const roomOne = supabase.channel('online-users', {
+      config: {
+        presence: {
+          key: 'user',
+        },
+      },
+    });
+
+    roomOne
+      .on('presence', { event: 'sync' }, () => {
+        const state = roomOne.presenceState();
+        const count = Object.keys(state).length;
+        setOnlineUsers(count === 0 ? 1 : count);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await roomOne.track({ online_at: new Date().toISOString() });
+        }
+      });
+
+    return () => {
+      roomOne.unsubscribe();
+    };
   }, []);
 
   const toggleLanguage = () => {
@@ -390,9 +416,14 @@ function App() {
           <h1 style={{ margin: 0, color: 'var(--text-main)', fontSize: '24px', letterSpacing: '1px', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
             {t.title}
           </h1>
-          <span style={{ fontSize: '12px', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 'bold' }}>
-            {t.subtitle}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '2px' }}>
+            <span style={{ fontSize: '12px', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 'bold' }}>
+              {t.subtitle}
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '12px', border: '1px solid rgba(16, 185, 129, 0.2)' }} title="Usuarios en línea">
+              <Eye size={12} /> {onlineUsers}
+            </div>
+          </div>
         </div>
         
         <div style={{ flex: 1, display: 'flex', gap: '10px', marginLeft: '40px' }}>
