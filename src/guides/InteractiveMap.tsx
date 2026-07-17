@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
+import { renderToString } from 'react-dom/server';
 import { MapContainer, ImageOverlay, useMap, ZoomControl, Marker, Popup, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { ArrowLeft, Filter, X, ChevronRight, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Filter, X, ChevronRight, ChevronDown, Pickaxe, Leaf, TreePine, PawPrint, Castle, Package, MapPin, Ship, Wheat, Hammer } from 'lucide-react';
 import mapData from '../data/mapData.json';
 
 // Fix leafet default icon path issues
@@ -59,29 +60,31 @@ const MapTiles = () => {
   return <>{tiles}</>;
 };
 
-const createCustomIcon = (color: string, iconStr: string) => {
-  const isPhosphor = iconStr?.startsWith('ph:');
-  const isUrl = iconStr?.startsWith('/');
-  
-  let innerHtml = '';
-  if (isUrl) {
-    const imgUrl = iconStr.startsWith('/assets') ? `https://gloriavictisatlas.com${iconStr}` : `https://gloriavictisatlas.com/assets${iconStr}`;
-    innerHtml = `<img src="${imgUrl}" style="width:16px;height:16px;object-fit:contain;" />`;
-  } else if (isPhosphor) {
-    // We don't have phosphor icons imported, we just use a default dot for now
-    innerHtml = `<div style="width:10px;height:10px;background:white;border-radius:50%;margin:auto;margin-top:10px;"></div>`;
-  } else {
-    innerHtml = `<div style="width:10px;height:10px;background:white;border-radius:50%;margin:auto;margin-top:10px;"></div>`;
-  }
+const getCategoryIconComponent = (name: string) => {
+  const n = name.toLowerCase();
+  if (n.includes('miner') || n.includes('carbón') || n.includes('sal') || n.includes('granito') || n.includes('hierro')) return <Pickaxe size={16} color="white" />;
+  if (n.includes('silvi') || n.includes('madera')) return <TreePine size={16} color="white" />;
+  if (n.includes('herb') || n.includes('flor') || n.includes('fruta') || n.includes('raíz')) return <Leaf size={16} color="white" />;
+  if (n.includes('caza') || n.includes('lobo') || n.includes('oso') || n.includes('carroñero') || n.includes('jabalí')) return <PawPrint size={16} color="white" />;
+  if (n.includes('granja') || n.includes('vaca') || n.includes('cerdo') || n.includes('trigo') || n.includes('cebada')) return <Wheat size={16} color="white" />;
+  if (n.includes('estruct') || n.includes('castillo') || n.includes('mina') || n.includes('mirador')) return <Castle size={16} color="white" />;
+  if (n.includes('barco')) return <Ship size={16} color="white" />;
+  if (n.includes('cofre') || n.includes('caja') || n.includes('tesoro')) return <Package size={16} color="white" />;
+  if (n.includes('npc') || n.includes('caballo')) return <MapPin size={16} color="white" />;
+  if (n.includes('excavación')) return <Hammer size={16} color="white" />;
+  return <MapPin size={16} color="white" />;
+};
 
+const createCustomIcon = (color: string, name: string) => {
+  const iconComponent = getCategoryIconComponent(name);
+  const iconHtml = renderToString(iconComponent);
+  
   return L.divIcon({
     className: 'custom-leaflet-icon',
-    html: `<div style="background:${color || '#888'};width:30px;height:30px;border-radius:50%;border:2px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,0.5);">
-      ${innerHtml}
-    </div>`,
+    html: `<div style="background:${color || '#888'};width:30px;height:30px;border-radius:6px;border:2px solid rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.8);transform:rotate(45deg);"><div style="transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;">${iconHtml}</div></div>`,
     iconSize: [30, 30],
-    iconAnchor: [15, 30],
-    popupAnchor: [0, -30],
+    iconAnchor: [15, 15],
+    popupAnchor: [0, -20],
   });
 };
 
@@ -143,7 +146,7 @@ export const InteractiveMap: React.FC<Props> = ({ onBack, lang }) => {
               <Marker 
                 key={m.id} 
                 position={[m.lat, m.lng]} 
-                icon={createCustomIcon(t.color, t.icon)}
+                icon={createCustomIcon(t.color, t.name)}
               >
                 <Popup>
                   <strong style={{ color: 'var(--accent)' }}>{m.title || t.name}</strong>
@@ -264,7 +267,7 @@ export const InteractiveMap: React.FC<Props> = ({ onBack, lang }) => {
                             onChange={() => toggleType(t.id)}
                             style={{ accentColor: 'var(--accent)' }}
                           />
-                          <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: t.color }}></div>
+                          <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: t.color, transform: 'rotate(45deg)', margin: '0 4px', border: '1px solid rgba(255,255,255,0.8)' }}></div>
                           <span style={{ fontSize: '14px', color: '#ccc' }}>{t.name}</span>
                         </label>
                       ))}
@@ -300,7 +303,7 @@ export const InteractiveMap: React.FC<Props> = ({ onBack, lang }) => {
                                       onChange={() => toggleType(t.id)}
                                       style={{ accentColor: 'var(--accent)' }}
                                     />
-                                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: t.color }}></div>
+                                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: t.color, transform: 'rotate(45deg)', margin: '0 4px', border: '1px solid rgba(255,255,255,0.8)' }}></div>
                                     <span style={{ fontSize: '13px', color: '#999' }}>{t.name}</span>
                                   </label>
                                 ))}
